@@ -1,0 +1,18 @@
+{
+    "userRoute1": {
+      "password": "$2b$10$bxbfHOmPeKyhaNM4orFDNuf388Zj0/ll4zMzDZ6aK1ricswUDcejO",
+      "acl": ["/route1"]
+    },
+    "userRoute2": {
+      "password": "$2b$10$EtrwmemS2ahgU8/Uzldnwuod8lWfirp96WLiGvzplq5tS8REZbWaa",
+      "acl": ["/route2/*"]
+    },
+    "userAllRoutes": {
+      "password": "$2b$10$tLh.k52vPg81a9SAXSpE5eN/pb5tuOX.geju.XgFYcMP8nuOzE.Ei",
+      "acl": ["*"]
+    },
+    "userNoPassword": {},
+    "userNoACL": {
+      "password": "$2b$10$KAaSQmql8BR2Ai1JgO94.ucZ/AbzjqeCAENRPy9BMVyKYslDUCUou"
+    }
+}
