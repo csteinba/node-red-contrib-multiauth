@@ -1,7 +1,7 @@
 const request = require("supertest");
 const express = require("express");
-const bcrypt = require("bcrypt");
-const { basicAuthMiddleware } = require("./multiauth");
+const { basicAuthMiddleware, loadUsers } = require("./multiauth");
+loadUsers("./users.json")
 
 // Express-App für Tests mit Middleware
 const app = express();
