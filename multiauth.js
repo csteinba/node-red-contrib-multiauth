@@ -1,9 +1,8 @@
 const fs = require("fs");
-const bcrypt = require("bcrypt");
-const path = require("path");
+const argon2 = require("argon2");
 
 /** Global variable to store user data */
-let users = Object.create(null);
+let users = new Map();
 
 /**
  * Loads user credentials and ACL from `users.json` once at startup.
@@ -12,10 +11,11 @@ let users = Object.create(null);
 function loadUsers(filePath) {
     try {
         const data = fs.readFileSync(filePath, "utf-8");
-        users = Object.assign(Object.create(null), JSON.parse(data)); // Prevent prototype pollution
+        for(const [username, value] of Object.entries(JSON.parse(data))) {
+            users.set(username, value);
+        }
     } catch (err) {
-        console.error("Error loading users file:", err);
-        users = Object.create(null); // Ensure users is always a safe object
+        console.error("Error loading users.json:", err);
     }
 }
 
@@ -69,25 +69,23 @@ async function basicAuthMiddleware(req, res, next) {
         username === "__proto__" ||
         username === "constructor"
     ) {
-        return res.status(400).send("Invalid username");
-    }
-
-    // Ensure safe property lookup
-    if (!Object.prototype.hasOwnProperty.call(users, username)) {
-        console.log("user not found", users, username)
-        return res.status(401).send("Invalid credentials");
+        return res.status(400).send("Invalid credentials");
     }
 
     // Get user profile
-    const user = users[username];
+    const user = users.get(username);
+    if(user === undefined) {
+        return res.status(401).send("Invalid credentials");
+    }
+
+    // Check user profile is valid configured
     if(typeof user !== "object" || !user.password || !Array.isArray(user.acl)) {
         return res.status(500).send("Invalid user profile");
     }
 
-    // Secure password comparison
-    const valid = await bcrypt.compare(password, user.password);
-    if (!valid) {
-        console.log("user password", password, user.password)
+    // Secure password comparison with argon2
+    const isValid = await argon2.verify(user.password, password);
+    if (!isValid) {
         return res.status(401).send("Invalid credentials");
     }
 
@@ -100,4 +98,11 @@ async function basicAuthMiddleware(req, res, next) {
     next();
 }
 
-module.exports = { basicAuthMiddleware, loadUsers };
+async function hashPassword(password) {
+    onsole.time("hash-pw");
+    const digest = await argon2.hash(password);
+    console.timeEnd("hash-pw");
+    console.log(digest);
+}
+
+module.exports = { basicAuthMiddleware, loadUsers, hashPassword };

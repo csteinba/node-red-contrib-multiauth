@@ -18,7 +18,7 @@
   "author": "https://github.com/csteinba",
   "license": "MIT",
   "dependencies": {
-    "bcrypt": "^5.1.1"
+    "argon2": "^0.41.1"
   },
   "devDependencies": {
     "express": "^4.21.2",

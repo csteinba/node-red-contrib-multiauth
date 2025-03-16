@@ -5,7 +5,7 @@
 ## 📖 Features  
 
 ✅ **Basic Authentication** (multiple users)  
-✅ **Hashed Passwords** (`bcrypt`)  
+✅ **Hashed Passwords** (`argon2`)  
 ✅ **Access Control (ACL)** based on JSON rules  
 ✅ **Wildcard Route Support** (e.g., `api/myroute/*`)  
 ✅ **Optimized for Performance** (users loaded once)  
@@ -56,9 +56,9 @@ Create a users.json file:
 }
 ```
 
-🔑 Passwords are stored as bcrypt hashes
+🔑 Passwords are stored as argon2 hashes
 ```sh
-node -e "console.log(require('bcrypt').hashSync(process.argv[1], 10));" your-password-here
+node -e "require('node-red-contrib-multiauth').hashPassword('your-password-here');"
 ```
 
 ### 🔬 Testing
@@ -70,8 +70,7 @@ npm test
 
 ### 🛡 Security
 
-- ✅ Prevents Timing Attacks (bcrypt.compare())
-- ✅ Protects Against Injection (safe object access)
+✅ Safe password comparison with argon2.verify().
 
 #### 📜 License
 

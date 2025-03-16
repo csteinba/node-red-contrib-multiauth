@@ -1,18 +1,18 @@
 {
     "userRoute1": {
-      "password": "$2b$10$bxbfHOmPeKyhaNM4orFDNuf388Zj0/ll4zMzDZ6aK1ricswUDcejO",
+      "password": "$argon2id$v=19$m=16384,t=2,p=4$4K1clRHeiw2IFOjIWp58bA$f+b88qhIX+ZTY1du+JC/gnBjEgwAdtRBjSFukd/hifM",
       "acl": ["/route1"]
     },
     "userRoute2": {
-      "password": "$2b$10$EtrwmemS2ahgU8/Uzldnwuod8lWfirp96WLiGvzplq5tS8REZbWaa",
+      "password": "$argon2id$v=19$m=16384,t=2,p=4$OXofB1K2sbwEaxF15h4t4g$WSLxc9SNBRUQxoVbr6CqywUONLdevDvfUK0pVpkPbJ4",
       "acl": ["/route2/*"]
     },
     "userAllRoutes": {
-      "password": "$2b$10$tLh.k52vPg81a9SAXSpE5eN/pb5tuOX.geju.XgFYcMP8nuOzE.Ei",
+      "password": "$argon2id$v=19$m=16384,t=2,p=4$TBY9bZFra0ObEYaHD2DYxw$NESJ4uhmwY9DaleHDEzDF8BNVjWbLw06J1gSn7d9+Qg",
       "acl": ["*"]
     },
     "userNoPassword": {},
     "userNoACL": {
-      "password": "$2b$10$KAaSQmql8BR2Ai1JgO94.ucZ/AbzjqeCAENRPy9BMVyKYslDUCUou"
+      "password": "argon2id$v=19$m=16384,t=2,p=4$bkhGPmdC5kU6PevvhGCtZQ$coITItO5sWqVvIzUVh40RGP4CqGc6wWRABn9E+qfcIs"
     }
 }
