@@ -8,7 +8,7 @@
 ✅ **Hashed Passwords** (`argon2`)  
 ✅ **Access Control (ACL)** based on JSON rules  
 ✅ **Wildcard Route Support** (e.g., `api/myroute/*`)  
-✅ **Optimized for Performance** (users loaded once)  
+✅ **Optimized for Performance** 
 
 ---
 
@@ -27,10 +27,11 @@ Edit your settings.js file:
 
 ```js
 
-const { basicAuthMiddleware, loadUsers } = require("node-red-contrib-multiauth");
+const { basicAuthInit, basicAuthMiddleware } = require("node-red-contrib-multiauth");
 
-// load users once at startup
-loadUsers("./users.json");
+basicAuthInit({
+    usersFile: "./users.json"
+});
 
 module.exports = {
     // ....
@@ -39,6 +40,18 @@ module.exports = {
     // ...
 };
 ```
+
+**Optional: Enable Password Caching**
+
+This function is disabled by default. When enabled, the user password is temporarily stored in the memory to enable faster confirmation of the correct password. This exactly replicates the function of the original Node-RED Authentication Middleware.
+
+```js
+basicAuthInit({
+    usersFile: "./users.json",
+    passwordCaching: true
+});
+```
+As the password requests then only have to be checked by `argon2.verify` the first time, this results in better performance of the requests. However, the compromise is that the passwords are stored in plain text in the memory, which does not meet the highest security standards. If you do not need the performance, we recommend leaving this feature disabled. It is better to use a higher parallelization or a lower number of rounds with the argon2 hashes (check out `has-pw.js`). The performance differences are then only minimal. 
 
 ### ⚙️ Add User
 Create a users.json file:
@@ -67,10 +80,6 @@ Run Jest tests:
 ```sh
 npm test
 ```
-
-### 🛡 Security
-
-✅ Safe password comparison with argon2.verify().
 
 #### 📜 License
 

@@ -1,7 +1,10 @@
 const request = require("supertest");
 const express = require("express");
-const { basicAuthMiddleware, loadUsers } = require("./multiauth");
-loadUsers("./users.json")
+const { basicAuthMiddleware, basicAuthInit } = require("./multiauth");
+basicAuthInit({
+    usersFile: "./users.json",
+    passwordCaching: true
+});
 
 // Express-App für Tests mit Middleware
 const app = express();

@@ -1,18 +1,26 @@
 const fs = require("fs");
 const argon2 = require("argon2");
 
-/** Global variable to store user data */
+/** Global variables */
 let users = new Map();
 
 /**
- * Loads user credentials and ACL from `users.json` once at startup.
- * Stores the result in memory for fast access.
+ * Initializes basic authentication with a user file and optional password caching.
+ *
+ * @param {Object} options - The authentication options.
+ * @param {string} options.usersFile - The path to the file containing user credentials.
+ * @param {boolean} [options.passwordCaching=false] - Whether to enable password caching (default: false).
+ * @returns {void} Returns nothing.
  */
-function loadUsers(filePath) {
+function basicAuthInit({ usersFile, passwordCaching }) {
     try {
-        const data = fs.readFileSync(filePath, "utf-8");
-        for(const [username, value] of Object.entries(JSON.parse(data))) {
-            users.set(username, value);
+        const data = fs.readFileSync(usersFile, "utf-8");
+        for (const [username, value] of Object.entries(JSON.parse(data))) {
+            users.set(username, {
+                digest: value.password,
+                pwd: passwordCaching ? null : undefined,
+                acl: value.acl,
+            });
         }
     } catch (err) {
         console.error("Error loading users.json:", err);
@@ -22,13 +30,13 @@ function loadUsers(filePath) {
 /**
  * Checks if a user has permission to access a given route based on ACL.
  * Supports wildcard patterns (`/*`).
- * 
+ *
  * @param {string[]} userAcl - The list of allowed routes for the user.
  * @param {string} route - The requested route.
  * @returns {boolean} True if access is allowed, otherwise false.
  */
 function isAccessAllowed(userAcl, route) {
-    return userAcl.some(pattern => {
+    return userAcl.some((pattern) => {
         if (pattern === "*") return true; // Full access
         if (pattern.endsWith("/*")) {
             const basePattern = pattern.slice(0, -1); // Remove trailing wildcard
@@ -40,7 +48,7 @@ function isAccessAllowed(userAcl, route) {
 
 /**
  * Express middleware for Basic Authentication with ACL-based access control.
- * 
+ *
  * @param {import("express").Request} req - The request object.
  * @param {import("express").Response} res - The response object.
  * @param {import("express").NextFunction} next - The next middleware function.
@@ -56,7 +64,9 @@ async function basicAuthMiddleware(req, res, next) {
     const base64Credentials = authHeader.split(" ")[1];
     let credentials;
     try {
-        credentials = Buffer.from(base64Credentials, "base64").toString("utf-8");
+        credentials = Buffer.from(base64Credentials, "base64").toString(
+            "utf-8"
+        );
     } catch (error) {
         return res.status(400).send("Invalid authentication data");
     }
@@ -74,19 +84,28 @@ async function basicAuthMiddleware(req, res, next) {
 
     // Get user profile
     const user = users.get(username);
-    if(user === undefined) {
+    if (user === undefined) {
         return res.status(401).send("Invalid credentials");
     }
 
     // Check user profile is valid configured
-    if(typeof user !== "object" || !user.password || !Array.isArray(user.acl)) {
+    if (typeof user !== "object" || !user.digest || !Array.isArray(user.acl)) {
         return res.status(500).send("Invalid user profile");
     }
 
-    // Secure password comparison with argon2
-    const isValid = await argon2.verify(user.password, password);
+    // password comparison
+    const isValid =
+        (typeof user.pwd === "string" && user.pwd === password) ||
+        (await argon2.verify(user.digest, password));
     if (!isValid) {
         return res.status(401).send("Invalid credentials");
+    }
+
+    // if password caching enabled store password in memory
+    // this enables better performance after first successfull login
+    if(user.pwd === null) {
+        user.pwd = password;
+        users.set(username, user);
     }
 
     // Check ACL for route access
@@ -99,10 +118,10 @@ async function basicAuthMiddleware(req, res, next) {
 }
 
 async function hashPassword(password) {
-    onsole.time("hash-pw");
+    console.time("hash-pw");
     const digest = await argon2.hash(password);
     console.timeEnd("hash-pw");
     console.log(digest);
 }
 
-module.exports = { basicAuthMiddleware, loadUsers, hashPassword };
+module.exports = { basicAuthMiddleware, basicAuthInit, hashPassword };
