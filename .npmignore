@@ -2,3 +2,5 @@ users.json
 hash-pw.js
 multiauth.test.js
 .gitignore
+node_modules
+package-lock.json
